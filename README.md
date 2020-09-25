@@ -141,13 +141,13 @@ go func() {
 }
 ```
 
-## Message Handlers
+## Query Handlers
 
-You should pass a `MessageHandler` to the `ipc.NewConnection` function. This message handler will be used to receive queries and respond with the appropriate data. In the event that you have no response you should return an empty string.
+You should pass a `QueryHandler` to the `ipc.NewConnection` function. This query handler will be used to receive queries and respond with the appropriate data. In the event that you have no response you should return an empty string.
 
 ```go
-func MyMessageHandler(message string) string {
-    if message == "hello" {
+func MyQueryHandler(query string) string {
+    if query == "hello" {
         return "world"
     }
 

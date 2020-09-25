@@ -28,8 +28,8 @@ func newIOHandler(peer net.Conn, timeout time.Duration) *ioHandler {
 }
 
 func (handler *ioHandler) listen(
-    msghandler MessageHandler,
-    keepalive bool,
+    queryhandler QueryHandler,
+    keepalive    bool,
 ) error {
     if keepalive {
         debugLog("starting keep-alive thread for client")
@@ -102,7 +102,7 @@ func (handler *ioHandler) listen(
             if logQueries {
                 debugLog("received query with id %v: %v", input.QueryId, input.Data)
             }
-            outputstr := msghandler(input.Data)
+            outputstr := queryhandler(input.Data)
             output := input.makeResponseWithData(outputstr)
             if logQueries {
                 debugLog("sending query response for query with id %v: %v", output.QueryId, output.Data)

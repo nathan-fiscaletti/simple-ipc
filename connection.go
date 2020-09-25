@@ -9,11 +9,10 @@ import (
     "strings"
 )
 
-// MessageHandler is used for handling queries from the other end of
-// the IPC tunnel. It will receive the query messsage and should
-// respond with a response. If you do not have a response, return
-// an empty string instead.
-type MessageHandler func(string) string
+// QueryHandler is used for handling queries from the other end of
+// the IPC tunnel. It will receive the query and should respond with a
+// response. If you do not have a response, return an empty string.
+type QueryHandler func(string) string
 
 // NotConnected represents an error message result from the Query
 // function indicating that you are trying to send a Query while the
@@ -33,8 +32,8 @@ type Connection struct {
     // is using to communicate with the other process.
     Spec                *Spec
 
-    // MessageHandler contains the MessageHandler to use for queries.
-    MessageHandler      MessageHandler
+    // QueryHandler contains the QueryHandler to use for queries.
+    QueryHandler        QueryHandler
 
     // QueryTimeout is the timeout value used for all I/O operations
     // and query responses. The default value is 5 seconds.
@@ -56,14 +55,14 @@ type Connection struct {
 }
 
 // NewConnection creates a new Connetion using the specified connection
-// specification and message handler.
+// specification and query handler.
 func NewConnection(
-    spec           *Spec,
-    messageHandler MessageHandler,
+    spec         *Spec,
+    queryHandler QueryHandler,
 ) *Connection {
     return &Connection{
         Spec: spec,
-        MessageHandler: messageHandler,
+        QueryHandler: queryHandler,
         Reconnect: true,
         ReconnectMaxRetries: 0,
         ReconnectDelay: time.Second,
@@ -285,7 +284,7 @@ func (connection *Connection) runClient() error {
     // Start listening for communication
     go func() {
         debugLog("starting communication cycle")
-        err := io.listen(connection.MessageHandler, true)
+        err := io.listen(connection.QueryHandler, true)
         if err != nil {
             errorLog("lost connection: %v\n", err)
         }
@@ -365,5 +364,5 @@ func (connection *Connection) handlePeer(peer net.Conn) (error) {
     // Return successfully
     connection.serverConnection = io
     debugLog("starting communication cycle")
-    return io.listen(connection.MessageHandler, false)
+    return io.listen(connection.QueryHandler, false)
 }
