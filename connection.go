@@ -177,7 +177,7 @@ func (connection *Connection) runClient() error {
     }
 
     go func() {
-        err := io.listen(connection.MessageHandler)
+        err := io.listen(connection.MessageHandler, true)
         if err != nil {
             fmt.Printf("lost connection: %v\n", err)
         }
@@ -245,5 +245,5 @@ func (connection *Connection) handlePeer(peer net.Conn) (error) {
 
     connection.serverConnection = io
 
-    return io.listen(connection.MessageHandler)
+    return io.listen(connection.MessageHandler, false)
 }

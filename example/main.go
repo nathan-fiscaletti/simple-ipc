@@ -1,7 +1,7 @@
 package main
 
 import (
-    ipc "../"
+    ipc ".."
     "fmt"
     "time"
 )
@@ -49,6 +49,6 @@ func main() {
         if res != "" {
             fmt.Printf("query response: %v\n", res)
         }
-        time.Sleep(time.Second * 5)
+        time.Sleep(time.Second * 10)
     }
 }

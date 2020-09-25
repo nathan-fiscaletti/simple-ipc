@@ -27,12 +27,43 @@ func newIOHandler(peer net.Conn, timeout time.Duration) *ioHandler {
     }
 }
 
-func (handler *ioHandler) listen(msghandler MessageHandler) error {
+func (handler *ioHandler) listen(msghandler MessageHandler, keepalive bool) error {
+    // Keep alive
+    if keepalive {
+        go func() {
+            for {
+                output := newMessageWithOpCode(opcode_KEEPALIVE)
+                err := handler.sendMessageWithoutResponse(output)
+                
+                if err != nil {
+                    break
+                }
+
+                timeout := handler.timeout
+                if timeout == time.Duration(0) {
+                    timeout = time.Second * 5
+                }
+                time.Sleep(timeout / 2)
+            }
+        }()
+    }
+
     for {
         input, err := handler.nextMessage()
         if err != nil {
             handler.close()
             return err
+        }
+
+        // Handle keep alive packets
+        if input.OpCode == opcode_KEEPALIVE {
+            accepted := newMessageWithOpCode(opcode_KEEPALIVE_ACCEPTED)
+            handler.sendMessageWithoutResponse(accepted)
+            continue
+        }
+
+        if input.OpCode == opcode_KEEPALIVE_ACCEPTED {
+            continue
         }
 
         // This means it is a response to a query

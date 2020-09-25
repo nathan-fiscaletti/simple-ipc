@@ -10,6 +10,8 @@ import (
 
 const (
     opcode_RESPONSE = iota
+    opcode_KEEPALIVE
+    opcode_KEEPALIVE_ACCEPTED
     opcode_REQUEST
     opcode_TERMINATE
     opcode_NORESPONSE
