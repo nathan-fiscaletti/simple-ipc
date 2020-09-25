@@ -29,7 +29,7 @@ import(
     "fmt"
     "time"
 
-    "github.com/vrazo/simple-ipc"
+    "github.com/nathan-fiscaletti/simple-ipc"
 )
 
 func main() {
