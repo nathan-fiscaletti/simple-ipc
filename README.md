@@ -106,7 +106,7 @@ if err != nil {
 }
 ```
 
-In order to reconnect in the event of a failure a process must first successfully call the `connection.Connect()` function without any errors. If you want to guarantee a process successfully connects before terminating, you should wrap the `connection.Connect()` call. After the initial call to `connection.Connect()` returns, all subsequent "retries" that may be required due to the server dropping connection will be automatic. See [Customizing Reconnect Behavior](#customizing-reconnect-behavior) for more information.
+In order to reconnect in the event of a failure a process must first successfully call the `connection.Connect()` function without any errors. If you want to guarantee a process successfully connects before terminating, you should wrap the `connection.Connect()` call. After the initial call to `connection.Connect()` returns without error, all subsequent "retries" that may be required due to the server dropping connection will be automatic. See [Customizing Reconnect Behavior](#customizing-reconnect-behavior) for more information.
 
 ```go
 go func() {
