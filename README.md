@@ -171,6 +171,8 @@ You can customize the timeout of your `Connection` object by modifying the `Quer
 connection.QueryTimeout = time.Second * 3
 ```
 
+> Keep Alive packets will be sent from the client to the server at an interval 1/2 that of the QueryTimeout in order to avoid any potential I/O timeouts.
+
 ## Customizing Reconnect Behavior
 
 By default, when a process that has started as a client loses it's connection to the server it will indefinitely try to reconnect once a second until the server becomes available again.
