@@ -199,7 +199,7 @@ You can then write this encryption key to a file using the `encryptionKey.WriteT
 encryptionKey.WriteToFile("./encryption.key")
 ```
 
-You can alternately load the encryption key using the `ips.LoadEncryptionKey()` function.
+You can alternately load the encryption key using the `ipc.LoadEncryptionKey()` function.
 
 ```go
 encryptionKey, err := ipc.LoadEncryptionKey("./encryption.key")
