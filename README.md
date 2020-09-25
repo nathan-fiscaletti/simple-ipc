@@ -4,6 +4,20 @@
 
 Simple IPC aims to add support for basic messaging between two processes while maintaining an identical implementation for both the server and the client. This provides a very simple tunnel between the processes without having to worry about any of the networking.
 
+```sh
+$ go get github.com/nathan-fiscaletti/simple-ipc
+```
+
+```go
+package main
+
+import(
+    ...
+
+    "github.com/nathan-fiscaletti/simple-ipc"
+)
+```
+
 ## Basic Example
 
 The following example can run as a client and a server. 
