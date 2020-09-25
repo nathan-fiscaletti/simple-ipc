@@ -79,6 +79,8 @@ A connection specification is built up of three parts of data.
 
        This can be any of `tcp`, `tcp4`, `tcp6` or `unix`.
 
+       See the [Go: `net` Documentation](https://golang.org/pkg/net/) for more information on what each of the different `Type` values do and how they affect the `Address` field.
+
    2. The `Address`.
 
        The Address differs based on the `Type` field. 
@@ -86,8 +88,6 @@ A connection specification is built up of three parts of data.
    3. The `Secret`.
 
        The Secret is communicated to the server upon first connection to verify that the two processes are intended to communicate with each-other.
-
-See the [Go: `net` Documentation](https://golang.org/pkg/net/) for more information on what each of these do and how they affect the `Address` field.
 
 There are several helper functions to create Connection Specifications.
 
