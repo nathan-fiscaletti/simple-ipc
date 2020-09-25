@@ -165,13 +165,11 @@ response, err := connection.Query("hello")
 
 ## Customizing Timeout
 
-You can customize the timeout of your `Connection` object by modifying the `QueryTimeout` property. The default value is 5 seconds.
+You can customize the timeout of your `Connection` object by modifying the `QueryTimeout` property. The default value is **5 seconds**. Keep Alive packets will be sent from the client to the server at an interval 1/2 that of the QueryTimeout in order to avoid any potential I/O timeouts.
 
 ```go
 connection.QueryTimeout = time.Second * 3
 ```
-
-> Keep Alive packets will be sent from the client to the server at an interval 1/2 that of the QueryTimeout in order to avoid any potential I/O timeouts.
 
 ## Customizing Reconnect Behavior
 
