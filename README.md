@@ -234,7 +234,7 @@ To add support for TLS to your IPC Connection you can create a TLS `Spec`. This 
    $ openssl genrsa -out server.key 2048
 
    # For algorithm "ECDSA" ≥ secp384r1
-   openssl ecparam -genkey -name secp384r1 -out server.key
+   $ openssl ecparam -genkey -name secp384r1 -out server.key
    ```
 
    **Certificate**
