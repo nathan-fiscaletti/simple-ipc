@@ -5,6 +5,7 @@ import (
     "encoding/json"
     "sync"
     "fmt"
+    "math"
 )
 
 const (
@@ -12,14 +13,21 @@ const (
     opcode_KEEPALIVE
     opcode_KEEPALIVE_ACCEPTED
     opcode_REQUEST
-    opcode_TERMINATE
     opcode_NORESPONSE
     opcode_SECRET
     opcode_SECRET_ACCEPTED
 )
 
-var packetIdCounter     uint64 = 0
-var packetIdCounterLock sync.Mutex
+// Messages contain an OpCode, Data and a QueryID. Responses to a
+// message that uses the REQUEST opcode should be created using the
+// makeResponseWithData() or makeEmptyResponse() functions so that
+// they bear the same QueryID ans their requesting Message.
+
+// Message QueryIDs are generated using this counter. Once the counter
+// reaches the maximum value for an unsigned 64-bit integer it will
+// wrap back around to 0.
+var queryIdCounter     uint64 = 0
+var queryIdCounterLock sync.Mutex
 
 type message struct {
     OpCode  int
@@ -64,11 +72,15 @@ func newMessageWithData(data string) *message {
 }
 
 func (m *message) generateQueryID() {
-    packetIdCounterLock.Lock()
-    id := packetIdCounter
-    packetIdCounter = packetIdCounter + 1
+    queryIdCounterLock.Lock()
+    id := queryIdCounter
+    if queryIdCounter == math.MaxUint64 {
+        queryIdCounter = 0
+    } else {
+        queryIdCounter = queryIdCounter + 1
+    }
     m.QueryId = id
-    packetIdCounterLock.Unlock()
+    queryIdCounterLock.Unlock()
 }
 
 func (m *message) makeResponseWithData(data string) *message {

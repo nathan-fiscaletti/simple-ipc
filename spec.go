@@ -24,6 +24,16 @@ type Spec struct {
     tlsCertBytes []byte
 }
 
+func (spec *Spec) toString() string {
+    return fmt.Sprintf(
+        "Type: %v, Address: %v, Secret: %v, TLS: %v",
+        spec.Type,
+        spec.Address,
+        spec.Secret,
+        spec.useTls,
+    )
+}
+
 // NewSpec creates a new insecure connection specification using the
 // specified type, address and secret.
 func NewSpec(hType string, address string, secret string) *Spec {
