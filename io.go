@@ -16,14 +16,14 @@ type handler struct {
 type ioHandler struct {
     peer             net.Conn
     timeout          time.Duration
-    responseHandlers map[int]*handler
+    responseHandlers map[uint64]*handler
 }
 
 func newIOHandler(peer net.Conn, timeout time.Duration) *ioHandler {
     return &ioHandler {
         peer: peer,
         timeout: timeout,
-        responseHandlers: map[int]*handler{},
+        responseHandlers: map[uint64]*handler{},
     }
 }
 

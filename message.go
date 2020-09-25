@@ -3,9 +3,8 @@ package ipc
 import (
     "encoding/base64"
     "encoding/json"
-    "math/rand"
+    "sync"
     "fmt"
-    "time"
 )
 
 const (
@@ -19,10 +18,13 @@ const (
     opcode_SECRET_ACCEPTED
 )
 
+var packetIdCounter     uint64 = 0
+var packetIdCounterLock sync.Mutex
+
 type message struct {
-    OpCode int
-    Data   string
-    QueryId int
+    OpCode  int
+    Data    string
+    QueryId uint64
 }
 
 func newMessage() *message {
@@ -62,9 +64,11 @@ func newMessageWithData(data string) *message {
 }
 
 func (m *message) generateQueryID() {
-    s1       := rand.NewSource(time.Now().UnixNano())
-    r1       := rand.New(s1)
-    m.QueryId = r1.Intn(5000)
+    packetIdCounterLock.Lock()
+    id := packetIdCounter
+    packetIdCounter = packetIdCounter + 1
+    m.QueryId = id
+    packetIdCounterLock.Unlock()
 }
 
 func (m *message) makeResponseWithData(data string) *message {
