@@ -183,7 +183,7 @@ You can configure this behavior using the `Reconnect`, `ReconnectMaxRetries`, an
 
 ## Using Encryption
 
-> The encryption system that is built into this IPC system is not intended to be used for securing connections but instead for locking the availability scope of the data contained in messages to the processes involved in the IPC Connection.
+The encryption system that is built into this IPC system is not intended to be used for securing connections but instead for locking the availability scope of the data contained in messages to the processes involved in the IPC Connection.
 
 By default, no encryption is enabled. You can either use the built in AES-256-GCM Encryption or implement your own `EncryptionProvider`.
 
