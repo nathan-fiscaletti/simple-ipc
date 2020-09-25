@@ -6,8 +6,7 @@ Simple IPC aims to add support for basic messaging between two processes while m
 
 ## Basic Example
 
-The following example can run as a client and a server. The first process to start will run as the server and the second process to start will run as the client.
-If the process is running as the client and the server goes away, it will continually attempt to reconnect until the server is available again.
+The following example can run as a client and a server. 
 
 ```go
 package main
@@ -81,6 +80,49 @@ There are several helper functions to create Connection Specifications.
    - `NewUnixSpec` -- Creates a new insecure Unix connection specification using the provided socket and secret.
    - `NewTLSSpec` -- Creates a new secure connection specification using the provided TLS key and certificate as well as the provided type, address and secret. See [Using TLS](#using-tls) for more information
 
+## Connections
+
+A connection represents an IPC communication channel between two processes.
+
+Characteristics of a Connection include:
+
+   - The first process to call `connection.Connect()` will run as the server and the second process to call the function will run as the client.
+   - Only two processes can ever use the same IPC Connection at once.
+   - If the process is running as the client and the server goes away, it will continually attempt to reconnect until the server is available again.
+   - When operating as a client the process will send keep alive packets at an interval **1/2** the length of the QueryTimeout parameter of the Connection in order to avoid any potential I/O timeouts.
+
+You can create a new connection using a Connection Specification.
+
+```go
+connection := ipc.NewConnection(spec)
+```
+
+You can then connect to it using the `connection.Connect()` function.
+
+```go
+err := connection.Connect()
+if err != nil {
+    panic(err)
+}
+```
+
+In order to reconnect in the event of a failure a process must first successfully call the `connection.Connect()` function without any errors. If you want to guarantee a process successfully connects before terminating, you should wrap the `connection.Connect()` call.
+
+```go
+go func() {
+    var error err
+    for {
+        err = connection.Connect()
+        if err != nil {
+            fmt.Printf("connect error: %v\n", err)
+            continue
+        }
+
+        break
+    }
+}
+```
+
 ## Message Handlers
 
 You should pass a `MessageHandler` to the `ipc.NewConnection` function. This message handler will be used to receive queries and respond with the appropriate data.
@@ -103,6 +145,14 @@ Either side of the connection can call `Query()` on their Connection object to q
 response, err := connection.Query("hello")
 ```
 
+## Customizing Timeout
+
+You can customize the timeout of your `Connection` object by modifying the `QueryTimeout` property. The default value is 5 seconds.
+
+```go
+connection.QueryTimeout = time.Second * 3
+```
+
 ## Customizing Reconnect Behavior
 
 By default, when a process that has started as a client loses it's connection to the server it will indefinitely try to reconnect once a second until the server becomes available again.
@@ -113,17 +163,9 @@ You can configure this behavior using the `Reconnect`, `ReconnectMaxRetries`, an
    - `ReconnectMaxRetries` -- After this many failed attempts to reconnect, the client will drop the connection. A `0` value indicates unlimited retries.
    - `ReconnectDelay` -- The duration to wait between each attempt to reconnect. Default value is one second.
 
-## Customizing Timeout
-
-You can customize the timeout of your `Connection` object by modifying the `QueryTimeout` property. The default value is 5 seconds.
-
-```go
-connection.QueryTimeout = time.Second * 3
-```
-
 ## Using Encryption
 
-The encryption system that is built into this IPC system is not intended to be used for securing connections but instead for locking the availability scope of the data contained in messages to the processes involved in the IPC Connection.
+> The encryption system that is built into this IPC system is not intended to be used for securing connections but instead for locking the availability scope of the data contained in messages to the processes involved in the IPC Connection.
 
 By default, no encryption is enabled. You can either use the built in AES-256-GCM Encryption or implement your own `EncryptionProvider`.
 
