@@ -75,10 +75,12 @@ See the [Go: `net` Documentation](https://golang.org/pkg/net/) for more informat
 
 There are several helper functions to create Connection Specifications.
 
-   - `NewSpec` -- Creates a new insecure connection specification using the provided type, address and secret.
-   - `NewTCPSpec` -- Creates a new insecure TCP connection specification using the provided address and secret.
-   - `NewUnixSpec` -- Creates a new insecure Unix connection specification using the provided socket and secret.
-   - `NewTLSSpec` -- Creates a new secure connection specification using the provided TLS key and certificate as well as the provided type, address and secret. See [Using TLS](#using-tls) for more information
+|Function|Description|
+|---|---|
+|`NewSpec`|Creates a new insecure connection specification using the provided type, address and secret.|
+|`NewTCPSpec`|Creates a new insecure TCP connection specification using the provided address and secret.|
+|`NewUnixSpec`|Creates a new insecure Unix connection specification using the provided socket and secret.|
+|`NewTLSSpec`|Creates a new secure connection specification using the provided TLS key and certificate as well as the provided type, address and secret. See [Using TLS](#using-tls) for more information|
 
 ## Connections
 
