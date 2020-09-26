@@ -6,6 +6,7 @@ import (
     "bufio"
     "strings"
     "time"
+    "sync"
 )
 
 type handler struct {
@@ -17,6 +18,11 @@ type ioHandler struct {
     peer             net.Conn
     timeout          time.Duration
     responseHandlers map[uint64]*handler
+
+    close            chan bool
+    closeKeepAlive   chan bool
+    
+    closed           sync.WaitGroup
 }
 
 func newIOHandler(peer net.Conn, timeout time.Duration) *ioHandler {
@@ -24,6 +30,8 @@ func newIOHandler(peer net.Conn, timeout time.Duration) *ioHandler {
         peer: peer,
         timeout: timeout,
         responseHandlers: map[uint64]*handler{},
+        close: make(chan bool),
+        closeKeepAlive: make(chan bool),
     }
 }
 
@@ -33,11 +41,18 @@ func (handler *ioHandler) listen(
 ) error {
     if keepalive {
         debugLog("starting keep-alive thread for client")
+        handler.closed.Add(1)
         // Only clients should ever provide a true value to the
         // keepalive variable. In this instance we will start a new
         // goroutine that will send a keepalive packet at an interval
         // that is 1/2 that of the I/O timeout.
         go func() {
+            defer func() {
+                debugLog("keep-alive routine closed")
+                handler.closed.Done()
+            }()
+
+            KEEPALIVE:
             for {
                 if logKeepAlives {
                     debugLog("sending keep-alive packet")
@@ -53,16 +68,34 @@ func (handler *ioHandler) listen(
                 if timeout == time.Duration(0) {
                     timeout = time.Second * 5
                 }
-                time.Sleep(timeout / 2)
+
+                select {
+                case <-handler.closeKeepAlive:
+                    return
+                case <-time.After(timeout / 2):
+                    continue KEEPALIVE
+                }
             }
         }()
     }
+
+    handler.closed.Add(1)
+
+    defer func() {
+        debugLog("listen routine closed")
+        handler.closed.Done()
+    }()
 
     for {
         // Read the next message from the handler
         input, err := handler.nextMessage()
         if err != nil {
-            handler.close()
+            select {
+            case <-handler.close:
+                return nil
+            default:
+            }
+
             return err
         }
 
@@ -113,7 +146,12 @@ func (handler *ioHandler) listen(
 
             err = handler.sendMessageWithoutResponse(output)
             if err != nil {
-                handler.close()
+                select {
+                case <-handler.close:
+                    return nil
+                default:
+                }
+
                 return err
             }
 
@@ -224,6 +262,9 @@ func (io *ioHandler) sendMessage(msg *message) (*message, error) {
     }
 }
 
-func (io *ioHandler) close() {
-    io.peer.Close()
+func (handler *ioHandler) Close() {
+    close(handler.closeKeepAlive)
+    close(handler.close)
+    handler.peer.Close()
+    handler.closed.Wait()
 }

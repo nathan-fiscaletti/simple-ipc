@@ -23,10 +23,11 @@ var NotConnected error = fmt.Errorf(
 
 // Connection represents an IPC Connection between two processes.
 type Connection struct {
-    acceptConnections   bool
     runningAsServer     bool
     clientConnection    *ioHandler
     serverConnection    *ioHandler
+    serverListener      net.Listener
+    closeServer         chan bool
 
     // Spec contains the connection specification that this connection
     // is using to communicate with the other process.
@@ -61,6 +62,7 @@ func NewConnection(
     queryHandler QueryHandler,
 ) *Connection {
     return &Connection{
+        closeServer: make(chan bool),
         Spec: spec,
         QueryHandler: queryHandler,
         Reconnect: true,
@@ -143,6 +145,20 @@ func (connection *Connection) Connect() error {
     connection.runningAsServer   = true
     go connection.runServer(server)
     return nil
+}
+
+func (connection *Connection) Close() {
+    debugLog("closing connection")
+    if connection.serverConnection != nil {
+        connection.serverConnection.Close()
+        close(connection.closeServer)
+        connection.serverListener.Close()
+        return
+    }
+
+    if connection.clientConnection != nil {
+        connection.clientConnection.Close()
+    }
 }
 
 // Query will query the other side of the connection with a message. If
@@ -312,12 +328,20 @@ func (connection *Connection) runClient() error {
 }
 
 func (connection *Connection) runServer(listener net.Listener) {
-    connection.acceptConnections = true
-    defer listener.Close()
+    connection.serverListener = listener
+    defer func() {
+        listener.Close()
+        debugLog("connection closed")
+    }()
 
-    for connection.acceptConnections {
+    for {
         peer,err := listener.Accept()
         if err != nil {
+            select {
+            case <-connection.closeServer:
+                return
+            default:
+            }
             errorLog("failed to accept connection: %v\n", err)
             continue
         }

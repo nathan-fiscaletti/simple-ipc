@@ -2,6 +2,7 @@ package main
 
 import (
     ipc ".."
+    "flag"
     "fmt"
     "time"
     "log"
@@ -18,6 +19,10 @@ func handleMessage(message string) string {
 }
 
 func main() {
+    var count int = 0
+    flag.IntVar(&count, "c", 0, "number of queries to send")
+    flag.Parse()
+
     debugLogger := log.New(os.Stdout, "IPC ", log.LstdFlags)
     ipc.SetDebugLogger(debugLogger)
     ipc.SetLogQueries(true)
@@ -48,7 +53,7 @@ func main() {
     }
 
     // You can now query the connection
-    for true {
+    for i:=0; i < count; i++ {
         res, err := conn.Query("hello")
         if err != nil {
             fmt.Printf("query error: %v\n", err)
@@ -56,6 +61,8 @@ func main() {
         if res != "" {
             fmt.Printf("query response: %v\n", res)
         }
-        time.Sleep(time.Second * 10)
+        time.Sleep(time.Second * 2)
     }
+
+    conn.Close()
 }
