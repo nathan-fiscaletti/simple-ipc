@@ -147,16 +147,29 @@ func (connection *Connection) Connect() error {
     return nil
 }
 
+// Close will cleanly close the connection. If no connection is open,
+// a message will be written to the debug log.
 func (connection *Connection) Close() {
+    if !connection.IsConnected() {
+        debugLog(
+            "attempting to close connection but no connection active",
+        )
+        return
+    }
+
     debugLog("closing connection")
+    defer debugLog("connection closed")
     if connection.serverConnection != nil {
+        // Close the connection to the client
         connection.serverConnection.Close()
+        // Stop listening for new connections
         close(connection.closeServer)
         connection.serverListener.Close()
         return
     }
 
     if connection.clientConnection != nil {
+        // Close the connection to the server
         connection.clientConnection.Close()
     }
 }
@@ -303,21 +316,22 @@ func (connection *Connection) runClient() error {
         err := io.listen(connection.QueryHandler, true)
         if err != nil {
             errorLog("lost connection: %v\n", err)
-        }
-        connection.clientConnection = nil
-        if connection.Reconnect {
-            debugLog("attempting reconnect with %v maximum retries", connection.ReconnectMaxRetries)
-            i := 1
-            for {
-                if i <= connection.ReconnectMaxRetries ||
-                   connection.ReconnectMaxRetries == 0 {
-                    err := connection.runClient()
-                    if err == nil {
-                        break
+
+            connection.clientConnection = nil
+            if connection.Reconnect {
+                debugLog("attempting reconnect with %v maximum retries", connection.ReconnectMaxRetries)
+                i := 1
+                for {
+                    if i <= connection.ReconnectMaxRetries ||
+                       connection.ReconnectMaxRetries == 0 {
+                        err := connection.runClient()
+                        if err == nil {
+                            break
+                        }
+                        time.Sleep(connection.ReconnectDelay)
                     }
-                    time.Sleep(connection.ReconnectDelay)
+                    i += 1
                 }
-                i += 1
             }
         }
     }()
