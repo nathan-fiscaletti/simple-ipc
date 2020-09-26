@@ -141,6 +141,8 @@ go func() {
 }
 ```
 
+You can close a connection at any time using the `connection.Close()` function. This will block the calling thread until the connection has cleanly closed.
+
 ## Query Handlers
 
 You should pass a `QueryHandler` to the `ipc.NewConnection` function. This query handler will be used to receive queries and respond with the appropriate data. In the event that you have no response you should return an empty string.
