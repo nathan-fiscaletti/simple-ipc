@@ -5,9 +5,9 @@ import (
 	"os"
 )
 
-var debugLogger   *log.Logger = nil
-var logQueries    bool        = false
-var logKeepAlives bool        = false
+var debugLogger *log.Logger = nil
+var logQueries bool = false
+var logKeepAlives bool = false
 
 // SetDebugLogger will set the logger to use for debug messages. By
 // default debug messages are not printed.
