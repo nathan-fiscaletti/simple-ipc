@@ -1,5 +1,7 @@
 # Simple IPC
 
+[![Sponsor Me!](https://img.shields.io/badge/%F0%9F%92%B8-Sponsor%20Me!-blue)](https://github.com/sponsors/nathan-fiscaletti)
+
 ## Description
 
 **The Problem**: Most rudimentary IPC implementations rely on a Client/Server mechanism in which you implement the server in one process and the client in another. This means the code you use must differ between each process.
